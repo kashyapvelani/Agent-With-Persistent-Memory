@@ -1,3 +1,4 @@
+import { SignInButton, UserButton } from "@clerk/nextjs"
 import { Button } from "@workspace/ui/components/button"
 
 export default function Page() {
@@ -8,6 +9,8 @@ export default function Page() {
         <div className="flex gap-2">
           <Button>Button</Button>
           <Button variant="outline">Outline</Button>
+          <SignInButton />
+          <UserButton />
         </div>
       </div>
     </div>

@@ -1,0 +1,31 @@
+{
+  "name": "@workspace/memory",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json --preserveWatchOutput",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "@workspace/qdrant": "workspace:*",
+    "@workspace/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
+  }
+}

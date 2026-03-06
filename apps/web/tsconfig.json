@@ -4,7 +4,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@workspace/ui": ["../../packages/ui/src/index.ts"],
+      "@workspace/ui/*": ["../../packages/ui/src/*"],
+      "@workspace/db": ["../../packages/db/src/index.ts"],
+      "@workspace/github": ["../../packages/github/src/index.ts"],
+      "@workspace/types": ["../../packages/types/src/index.ts"]
     },
     "plugins": [
       {
@@ -14,7 +18,7 @@
   },
   "include": [
     "next-env.d.ts",
-    "next.config.ts",
+    "next.config.mjs",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
