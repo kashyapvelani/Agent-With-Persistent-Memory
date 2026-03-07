@@ -44,8 +44,7 @@ If it doesn't influence future output, it's not memory — it's storage.
 | Embeddings | text-embedding-3-small (OpenAI) |
 | Primary Database | Supabase (Postgres + Realtime + Storage) |
 | Vector Database | Qdrant (Railway Docker) — code chunks + memory search |
-| Sandbox — Snippets | E2B |
-| Sandbox — Full Repo | Daytona |
+| Sandbox | E2B (all tasks — snippets, single-file, multi-file, full repo) |
 | CI/CD | GitHub Actions |
 
 > **Note:** Neo4j removed for MVP. Code relationship intelligence is handled via lightweight architectural summaries stored in Supabase + semantic search in Qdrant. Can be added in v2 for deep graph traversal.
@@ -109,7 +108,7 @@ User sends a message → agent classifies the task:
 |---|---|---|---|
 | Code Q&A / search | Claude Haiku 4.5 → retrieval | No | No |
 | Single line/file fix | Claude Sonnet 4.6 | No | E2B (verify) |
-| New feature / multi-step | GPT-5.3 plans → Claude Sonnet executes | Yes (with interrupt) | Daytona |
+| New feature / multi-step | GPT-5.3 plans → Claude Sonnet executes | Yes (with interrupt) | E2B |
 | Bug fix (multi-file) | GPT-5.3 plans → Claude Sonnet executes | Yes (with interrupt) | E2B |
 | Code review | Claude Sonnet 4.6 | No | No |
 
@@ -483,9 +482,9 @@ START
 - Output: unified diff only (never full file)
 - System prompt: `output ONLY valid unified diffs. Follow project conventions strictly.`
 
-**ExecutorNode (E2B / Daytona)**
-- Simple fix / snippet → E2B (run, capture stdout/stderr)
-- Multi-file / full feature → Daytona (full workspace, run test suite)
+**ExecutorNode (E2B)**
+- Reuses the sandbox from CoderNode (via `sandboxId` in state) — no re-clone
+- Runs the full test suite as final verification: `pnpm test --passWithNoTests`
 - Returns: `{ success, output, errors }`
 
 **ReviewerNode (Claude Sonnet 4.6)**
@@ -514,6 +513,7 @@ interface AgentState {
   currentStepIndex: number;
   retrievedChunks: CodeChunk[];
   memoryContext: string | null;        // injected conventions + arch + decisions
+  sandboxId: string | null;            // E2B sandbox reused across nodes in same session
   generatedDiffs: FileDiff[];
   executionResult: ExecutionResult | null;
   reviewResult: ReviewResult | null;
@@ -633,7 +633,6 @@ QDRANT_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 E2B_API_KEY=
-DAYTONA_API_KEY=
 GITHUB_APP_ID=
 GITHUB_APP_PRIVATE_KEY=
 LANGSMITH_API_KEY=
@@ -679,15 +678,15 @@ COHERE_API_KEY=
 - [x] Implement incremental re-indexing (git diff based)
 
 ### Phase 3 — Agent Core
-- [ ] Scaffold LangGraph.js agent in `apps/agent`
-- [ ] Implement ClassifierNode, QANode, CoderNode, ExecutorNode, ReviewerNode
-- [ ] Implement `packages/memory`: `inject.ts`, `extract.ts`, `search.ts`
-- [ ] Wire memory injection into CoderNode and PlannerNode
-- [ ] Implement MemoryExtractorNode (async, post-PR)
+- [x] Scaffold LangGraph.js agent in `apps/agent`
+- [x] Implement ClassifierNode, QANode, CoderNode, ExecutorNode, ReviewerNode
+- [x] Implement `packages/memory`: `inject.ts`, `extract.ts`, `search.ts`
+- [x] Wire memory injection into CoderNode and PlannerNode
+- [x] Implement MemoryExtractorNode (async, post-PR)
 - [ ] Integrate Cohere Rerank for retrieval quality
-- [ ] Integrate E2B for snippet execution
-- [ ] Implement PlannerNode with `interrupt()` for human-in-the-loop approval
-- [ ] Implement ReviewerNode with `interrupt()` for user review
+- [x] Integrate E2B sandbox (ReAct CoderNode — full repo access)
+- [x] Implement PlannerNode with `interrupt()` for human-in-the-loop approval
+- [x] Implement ReviewerNode with `interrupt()` for user review
 - [ ] Deploy agent to LangSmith
 
 ### Phase 4 — Frontend Workspace
@@ -700,8 +699,7 @@ COHERE_API_KEY=
 - [ ] All memory cards editable (PATCH API + memory_edits audit log)
 - [ ] Build PR creation flow (branch + PR via GitHub API)
 
-### Phase 5 — Polish & Daytona
-- [ ] Integrate Daytona for full-repo multi-file tasks
+### Phase 5 — Polish
 - [ ] Add org member invite flow
 - [ ] "Memory updated" toast on `memoryUpdated` custom events
 - [ ] Instability score warnings surfaced in PlanTimeline

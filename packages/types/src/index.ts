@@ -7,6 +7,7 @@ export interface JsonObject {
 
 export type TaskType = "qa" | "simpleFix" | "multiStep" | "review";
 export type MessageRole = "user" | "assistant" | "tool";
+export type PlanStepStatus = "pending" | "in_progress" | "completed" | "failed";
 export type IndexStatus = "pending" | "indexing" | "ready" | "failed";
 export type IndexingJobStatus = "running" | "complete" | "failed";
 export type PendingChangeStatus = "pending" | "pr_created";
@@ -184,8 +185,9 @@ export interface MemoryEdit {
 export interface PlanStep {
   step: string;
   file: string;
-  action: string;
+  action: "create" | "edit" | "delete" | string;
   description: string;
+  status: PlanStepStatus; // live execution status — streamed to frontend
 }
 
 export interface CodeChunk {
@@ -218,6 +220,7 @@ export interface AgentState {
   currentStepIndex: number;
   retrievedChunks: CodeChunk[];
   memoryContext: string | null;
+  sandboxId: string | null;
   generatedDiffs: FileDiff[];
   executionResult: ExecutionResult | null;
   reviewResult: ReviewResult | null;

@@ -1,8 +1,10 @@
 import "dotenv/config";
 
+// Re-export the compiled graph for LangGraph Cloud discovery
+export { graph } from "./agent/graph.js";
+
 export async function startAgent(): Promise<void> {
-  // Placeholder bootstrap for the LangGraph agent runtime.
-  console.log("agent started");
+  console.log("NexGenesis agent ready.");
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

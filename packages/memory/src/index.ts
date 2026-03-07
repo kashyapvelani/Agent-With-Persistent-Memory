@@ -1,15 +1,3 @@
-import type { ProjectRef } from "@workspace/types";
-
-export interface MemoryContext {
-  conventions: string;
-  architecture: string;
-  decisions: string[];
-}
-
-export async function injectMemory(_project: ProjectRef): Promise<MemoryContext> {
-  return {
-    conventions: "",
-    architecture: "",
-    decisions: []
-  };
-}
+export { buildMemoryContext } from "./inject.js";
+export { extractMemoryFromPR } from "./extract.js";
+export type { ExtractMemoryInput } from "./extract.js";

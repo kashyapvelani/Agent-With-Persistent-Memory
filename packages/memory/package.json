@@ -19,7 +19,10 @@
   "dependencies": {
     "@workspace/db": "workspace:*",
     "@workspace/qdrant": "workspace:*",
-    "@workspace/types": "workspace:*"
+    "@workspace/types": "workspace:*",
+    "@anthropic-ai/sdk": "^0.56.0",
+    "@qdrant/js-client-rest": "^1.15.1",
+    "openai": "^4.98.0"
   },
   "devDependencies": {
     "@types/node": "^25.1.0",
