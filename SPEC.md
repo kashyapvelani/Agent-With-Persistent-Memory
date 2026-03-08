@@ -683,7 +683,7 @@ COHERE_API_KEY=
 - [x] Implement `packages/memory`: `inject.ts`, `extract.ts`, `search.ts`
 - [x] Wire memory injection into CoderNode and PlannerNode
 - [x] Implement MemoryExtractorNode (async, post-PR)
-- [ ] Integrate Cohere Rerank for retrieval quality
+- [ ] Integrate Cohere Rerank for retrieval quality (Later)
 - [x] Integrate E2B sandbox (ReAct CoderNode — full repo access)
 - [x] Implement PlannerNode with `interrupt()` for human-in-the-loop approval
 - [x] Implement ReviewerNode with `interrupt()` for user review

@@ -1,18 +1,16 @@
-import { SignInButton, UserButton } from "@clerk/nextjs"
+import { Header } from "@/components/header"
 import { Button } from "@workspace/ui/components/button"
 
 export default function Page() {
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
+    <>
+      <Header />
+      <main className="flex flex-col container py-v4 justify-center gap-4">
+        <h1 className="text-2xl">NexGenesis: AI Agent with Persistent Memory</h1>
         <div className="flex gap-2">
-          <Button>Button</Button>
-          <Button variant="outline">Outline</Button>
-          <SignInButton />
-          <UserButton />
+          <Button>Get Started</Button>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }

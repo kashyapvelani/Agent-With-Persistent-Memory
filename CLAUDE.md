@@ -242,6 +242,12 @@ All tables have `orgId` + `projectId` columns. All queries MUST filter by both.
 - Call `sandbox.files.delete()` — the method is `sandbox.files.remove()` (E2B API)
 - Query Supabase without filtering by both `orgId` AND `projectId`
 - Commit from inside the sandbox — changes stay in sandbox; the GitHub API + pendingChanges table handles PR creation
+- Use camelCase column names in Supabase queries — Postgres stores unquoted identifiers as all-lowercase (use `clerkid`, `githubusername`, `clerkorgid`, `orgid`, `ownerid`, `repofullname`, `defaultbranch`, `indexstatus`, `githubinstallationid`, `createdat`, `lastindexedat`)
+- Use `NextResponse.next()` for public routes in `proxy.ts` — it bypasses Clerk SSO callback processing. Instead, just skip `auth.protect()` for public routes
+- Call `auth()` before the public route check in `proxy.ts` — it breaks sign-in/sign-up flows
+- Use Turbopack with this project — Next.js 16 defaults to Turbopack but workspace packages need webpack's `extensionAlias` config. Always use `next dev --webpack`
+- Query Supabase directly from the browser client without a Clerk JWT template configured — use server-side API routes with the service role client instead
+- Use `supabase.from("x").update()` when the row might not exist yet — use `upsert()` with `onConflict` instead
 
 ## DO
 - Read a file with `read_file` tool before editing it in ReAct loop
@@ -250,3 +256,41 @@ All tables have `orgId` + `projectId` columns. All queries MUST filter by both.
 - Filter Qdrant results by `projectId` payload — Qdrant collections may contain chunks from multiple projects
 - Dispatch `plan_step_update` custom events when a plan step status changes
 - Keep node functions returning `Partial<AgentStateType>` — only changed fields
+- Pass `Octokit` from `@octokit/rest` to the `App` constructor in `packages/github/src/app.ts` — without it, `getInstallationOctokit()` returns a bare octokit without `.rest` (e.g. `octokit.rest.apps` is undefined)
+- Use API routes (`/api/projects`, `/api/github/repos`) for all Supabase queries from the frontend — the browser Supabase client requires a Clerk JWT template which isn't configured
+- Use `upsert` with `onConflict` in the GitHub App callback (`/api/github/callback`) — the org row may not exist yet (Clerk webhooks don't work locally)
+- Sync both user AND organization in `/api/auth/sync` — webhooks don't fire locally, so the `SyncUser` component must handle org creation too
+- *Always* use Shadcn/UI Components shared from the `@workspace/ui` package.
+---
+
+## Frontend API Routes (apps/web/app/api/)
+- `POST /api/auth/sync` — syncs Clerk user + org to Supabase (called by `SyncUser` component on sign-in)
+- `GET /api/github/repos` — checks GitHub connection + lists repos via GitHub App installation token
+- `GET /api/github/callback` — GitHub App install callback, stores `githubinstallationid` on org (public route)
+- `GET /api/projects` — lists projects for the current org (server-side, service role client)
+- `POST /api/projects` — creates a new project
+- `POST /api/webhooks/clerk` — Clerk webhook handler (works in production, not local dev)
+
+## Key Frontend Components
+- `apps/web/components/sync-user.tsx` — fires POST `/api/auth/sync` once on sign-in (included in dashboard layout)
+- `apps/web/features/dashboard/components/project-grid.tsx` — main dashboard: checks GitHub connection, shows projects grid, handles empty/loading states
+- `apps/web/features/dashboard/components/new-project-dialog.tsx` — dialog to select a repo and create a project
+- `apps/web/hooks/useSupabase.ts` — memoized Supabase browser client (currently unused since queries moved to API routes)
+
+## Clerk + Supabase Integration (Local Dev)
+- Clerk webhooks do NOT fire locally — user/org sync is done via `/api/auth/sync` API route
+- The `SyncUser` component calls this on every sign-in from the dashboard layout
+- GitHub App callback uses `upsert` to create the org row if `SyncUser` hasn't run yet
+- The `ProjectGrid` component retries the GitHub connection check (up to 2x with 1.5s delay) to handle the race condition between `SyncUser` and the GitHub check
+
+## Proxy.ts (Auth Middleware) Rules
+```typescript
+// CORRECT — only protect non-public routes
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
+});
+```
+- Public routes: `/`, `/about`, `/sign-in(.*)`, `/sign-up(.*)`, `/api/github/callback`, `/api/webhooks(.*)`
+- Never short-circuit public routes with `NextResponse.next()` — Clerk must process them for SSO callbacks

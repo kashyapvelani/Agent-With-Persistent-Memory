@@ -1,22 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
 
-const isPublicRoute = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/about",
+  "/contact",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/github/callback",
+  "/api/webhooks(.*)",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, orgId } = await auth();
-  
-  // Allow public routes
-  if(isPublicRoute(req)) {
-     return NextResponse.next();
-  }
-
-  // Protect non-public routes
-  if(!userId){
+  // Don't protect public routes, but let Clerk process them (needed for SSO callbacks)
+  if (!isPublicRoute(req)) {
     await auth.protect();
   }
-  
-  return NextResponse.next();
 });
 
 export const config = {

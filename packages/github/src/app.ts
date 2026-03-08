@@ -15,6 +15,7 @@ export function createGitHubApp(env: GitHubAppEnv): App {
     appId: env.appId,
     // Railway / process.env stores \n as literal backslash-n — normalise here
     privateKey: env.privateKey.replace(/\\n/g, "\n"),
+    Octokit: Octokit,
   });
 }
 
@@ -25,8 +26,8 @@ export function createGitHubApp(env: GitHubAppEnv): App {
 export async function getInstallationOctokit(
   app: App,
   installationId: number
-): Promise<Octokit> {
-  return app.getInstallationOctokit(installationId) as unknown as Octokit;
+): Promise<InstanceType<typeof Octokit>> {
+  return app.getInstallationOctokit(installationId) as unknown as InstanceType<typeof Octokit>;
 }
 
 /**

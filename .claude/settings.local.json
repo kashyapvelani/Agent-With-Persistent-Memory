@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.tsx?$\")",
+      "Bash(node -e \"import\\(''@octokit/app''\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\)\")",
+      "Bash(node -e \":*)"
+    ]
+  }
+}

@@ -73,11 +73,11 @@ export async function POST(req: Request) {
       await supabase.from("users").upsert(
         {
           id: randomUUID(),
-          clerkId: user.id,
+          clerkid: user.id,
           email: primaryEmail,
-          githubUsername,
+          githubusername: githubUsername,
         },
-        { onConflict: "clerkId" }
+        { onConflict: "clerkid" }
       );
       break;
     }
@@ -89,10 +89,10 @@ export async function POST(req: Request) {
       await supabase.from("organizations").upsert(
         {
           id: randomUUID(),
-          clerkOrgId: org.id,
+          clerkorgid: org.id,
           name: org.name,
         },
-        { onConflict: "clerkOrgId" }
+        { onConflict: "clerkorgid" }
       );
       break;
     }
