@@ -2,11 +2,10 @@
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
-} from "@workspace/ui/components/sidebar"
-import { AppSidebar } from "./sidebar/app-sidebar"
-import { SiteHeader } from "./sidebar/site-header"
+} from "@workspace/ui/components/sidebar";
+import { SiteHeader } from "../../sidebar/components/site-header"
 import { ProjectGrid } from "./project-grid"
+import { AppSidebar } from "@/features/sidebar/components/app-sidebar";
 
 export const iframeHeight = "800px"
 

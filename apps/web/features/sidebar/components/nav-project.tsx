@@ -1,6 +1,6 @@
 "use client"
 
-import { Boxes, ChevronRight, type LucideIcon } from "lucide-react"
+import { History, SquarePen, type LucideIcon } from "lucide-react"
 
 import {
   SidebarGroup,
@@ -9,21 +9,24 @@ import {
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
 
-const items: [
-    {
-        title: string;
-        url: string;
-        icon: LucideIcon;
-        isActive?: boolean;
-    }
-] = [{
-    title: "Projects",
+const items: {
+    title: string;
+    url: string;
+    icon: LucideIcon;
+    isActive?: boolean;
+}[] = [{
+    title: "New Chat",
     url: "#",
-    icon: Boxes,
+    icon: SquarePen,
     isActive: true,
+},{
+    title: "History",
+    url: "#",
+    icon: History,
+    isActive: false,
 }]
 
-export function NavMain() {
+export function  NavProject() {
   return (
     <SidebarGroup>
       <SidebarMenu>

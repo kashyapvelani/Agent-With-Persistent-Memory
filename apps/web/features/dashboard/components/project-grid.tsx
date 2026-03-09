@@ -2,24 +2,18 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useOrganization } from "@clerk/nextjs"
-import { Plus, Search, GitBranch, Clock, Boxes, Github } from "lucide-react"
+import { Plus, Search, Github } from "lucide-react"
+
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@workspace/ui/components/card"
-import { Badge } from "@workspace/ui/components/badge"
+import { Card, CardContent, CardHeader } from "@workspace/ui/components/card"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@workspace/ui/components/empty"
 import type { Project } from "@workspace/types"
+
 import { NewProjectDialog } from "./new-project-dialog"
-
-type IndexStatus = Project["indexStatus"]
-
-const statusVariant: Record<IndexStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  ready: "default",
-  indexing: "secondary",
-  pending: "outline",
-  failed: "destructive",
-}
+import { ProjectCards } from "./project-cards"
+import { useIndexingProgress } from "../../../hooks/useIndexingProgress"
 
 export function ProjectGrid() {
   const { organization } = useOrganization()
@@ -63,6 +57,7 @@ export function ProjectGrid() {
   const filtered = projects.filter((p) =>
     p.repoFullName.toLowerCase().includes(search.toLowerCase())
   )
+  const progressMap = useIndexingProgress(projects, fetchProjects)
 
   const githubAppLink = process.env.NEXT_PUBLIC_GITHUB_APP_PUBLIC_LINK
   const installUrl = githubAppLink && organization
@@ -144,70 +139,13 @@ export function ProjectGrid() {
         </Button>
       </div>
 
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <Empty className="min-h-75 border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Boxes />
-            </EmptyMedia>
-            <EmptyTitle>
-              {search ? "No projects found" : "No projects yet"}
-            </EmptyTitle>
-            <EmptyDescription>
-              {search
-                ? "Try a different search term."
-                : "Connect a GitHub repository to get started."}
-            </EmptyDescription>
-          </EmptyHeader>
-          {!search && (
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus />
-              New Project
-            </Button>
-          )}
-        </Empty>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((project) => (
-            <Card key={project.id} className="transition-colors hover:border-foreground/20">
-              <CardHeader>
-                <CardTitle className="truncate">{project.repoFullName}</CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <GitBranch className="size-3.5" />
-                  {project.defaultBranch}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <Badge variant={statusVariant[project.indexStatus]}>
-                    {project.indexStatus}
-                  </Badge>
-                  {project.lastIndexedAt && (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="size-3" />
-                      {new Date(project.lastIndexedAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <ProjectCards
+        loading={loading}
+        filtered={filtered}
+        search={search}
+        progressMap={progressMap}
+        onNewProject={() => setDialogOpen(true)}
+      />
 
       <NewProjectDialog
         open={dialogOpen}

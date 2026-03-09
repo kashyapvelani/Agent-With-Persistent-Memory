@@ -87,12 +87,12 @@ export async function runIncrementalReindex(options: IncrementalReindexOptions):
 
   await supabase
     .from("projects")
-    .update({ indexStatus: "indexing" })
+    .update({ indexstatus: "indexing" })
     .eq("id", projectId);
 
   await supabase
-    .from("indexingJobs")
-    .update({ totalFiles: changedFiles.length + removedFiles.length })
+    .from("indexingjobs")
+    .update({ totalfiles: changedFiles.length + removedFiles.length })
     .eq("id", jobId);
 
   try {
@@ -119,8 +119,8 @@ export async function runIncrementalReindex(options: IncrementalReindexOptions):
 
       processed++;
       await supabase
-        .from("indexingJobs")
-        .update({ indexedFiles: processed, currentFile: f.filename })
+        .from("indexingjobs")
+        .update({ indexedfiles: processed, currentfile: f.filename })
         .eq("id", jobId);
     }
 
@@ -135,22 +135,22 @@ export async function runIncrementalReindex(options: IncrementalReindexOptions):
     await supabase
       .from("projects")
       .update({
-        indexStatus: "ready",
-        lastIndexedAt: new Date().toISOString(),
-        lastIndexedCommitSha: headSha,
+        indexstatus: "ready",
+        lastindexedat: new Date().toISOString(),
+        lastindexedcommitsha: headSha,
       })
       .eq("id", projectId);
 
     await supabase
-      .from("indexingJobs")
-      .update({ status: "complete", currentFile: null })
+      .from("indexingjobs")
+      .update({ status: "complete", currentfile: null })
       .eq("id", jobId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
-    await supabase.from("projects").update({ indexStatus: "failed" }).eq("id", projectId);
+    await supabase.from("projects").update({ indexstatus: "failed" }).eq("id", projectId);
     await supabase
-      .from("indexingJobs")
+      .from("indexingjobs")
       .update({ status: "failed", error: message })
       .eq("id", jobId);
 

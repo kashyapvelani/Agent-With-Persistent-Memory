@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "pnpm dlx @langchain/langgraph-cli dev",
     "start": "node dist/index.js",
+    "worker:index": "tsx src/indexing/worker.ts",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {

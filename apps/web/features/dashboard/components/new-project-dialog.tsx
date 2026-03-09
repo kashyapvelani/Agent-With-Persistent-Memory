@@ -131,7 +131,7 @@ export function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewPr
                       )}
                     </div>
                     {repo.description && (
-                      <p className="mt-0.5 text-xs text-muted-foreground whitespace-normal break-words">
+                      <p className="mt-0.5 text-xs text-muted-foreground whitespace-normal wrap-break-word">
                         {repo.description}
                       </p>
                     )}

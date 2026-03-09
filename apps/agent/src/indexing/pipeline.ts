@@ -56,7 +56,7 @@ export async function runIndexingPipeline(options: IndexingOptions): Promise<voi
   const [owner, repo] = repoFullName.split("/") as [string, string];
 
   // Mark job as running
-  await supabase.from("projects").update({ indexStatus: "indexing" }).eq("id", projectId);
+  await supabase.from("projects").update({ indexstatus: "indexing" }).eq("id", projectId);
 
   try {
     // 1. Get installation Octokit
@@ -69,8 +69,8 @@ export async function runIndexingPipeline(options: IndexingOptions): Promise<voi
 
     // 3. Update job with total file count
     await supabase
-      .from("indexingJobs")
-      .update({ totalFiles: indexableFiles.length })
+      .from("indexingjobs")
+      .update({ totalfiles: indexableFiles.length })
       .eq("id", jobId);
 
     // 4. Ensure Qdrant collection exists
@@ -113,8 +113,8 @@ export async function runIndexingPipeline(options: IndexingOptions): Promise<voi
 
       // Update real-time progress
       await supabase
-        .from("indexingJobs")
-        .update({ indexedFiles, currentFile })
+        .from("indexingjobs")
+        .update({ indexedfiles: indexedFiles, currentfile: currentFile })
         .eq("id", jobId);
     }
 
@@ -125,27 +125,27 @@ export async function runIndexingPipeline(options: IndexingOptions): Promise<voi
     await supabase
       .from("projects")
       .update({
-        indexStatus: "ready",
-        lastIndexedAt: new Date().toISOString(),
-        lastIndexedCommitSha: commitSha,
+        indexstatus: "ready",
+        lastindexedat: new Date().toISOString(),
+        lastindexedcommitsha: commitSha,
       })
       .eq("id", projectId);
 
     // 9. Mark job complete
     await supabase
-      .from("indexingJobs")
-      .update({ status: "complete", currentFile: null })
+      .from("indexingjobs")
+      .update({ status: "complete", currentfile: null })
       .eq("id", jobId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
     await supabase
       .from("projects")
-      .update({ indexStatus: "failed" })
+      .update({ indexstatus: "failed" })
       .eq("id", projectId);
 
     await supabase
-      .from("indexingJobs")
+      .from("indexingjobs")
       .update({ status: "failed", error: message })
       .eq("id", jobId);
 
@@ -162,11 +162,11 @@ export async function createIndexingJob(projectId: string): Promise<string> {
   const supabase = getSupabase();
   const jobId = randomUUID();
 
-  await supabase.from("indexingJobs").insert({
+  await supabase.from("indexingjobs").insert({
     id: jobId,
-    projectId,
+    projectid: projectId,
     status: "running",
-    indexedFiles: 0,
+    indexedfiles: 0,
   });
 
   return jobId;
