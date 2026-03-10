@@ -14,6 +14,32 @@ export type PendingChangeStatus = "pending" | "pr_created";
 export type MemoryType = "conventions" | "architecture" | "decision";
 export type MemoryExtractionStatus = "pending" | "running" | "done" | null;
 
+/** Agent v2 mode — plan (read-only until approved) or auto (full access). */
+export type AgentMode = "plan" | "auto";
+
+/** Session summary stored after each session ends. */
+export interface SessionSummary {
+  id: UUID;
+  projectId: UUID;
+  orgId: UUID;
+  sessionId: UUID;
+  summary: string;
+  topics: string[];
+  decisionsReferenced: UUID[];
+  embedding: number[] | null;
+  createdAt: string;
+}
+
+/** A recalled memory result from recall_memory tool. */
+export interface RecalledMemory {
+  id: string;
+  source: "decision" | "session";
+  score: number;
+  summary: string;
+  detail: string;
+  createdAt: string;
+}
+
 export interface ProjectRef {
   orgId: UUID;
   projectId: UUID;
@@ -210,6 +236,7 @@ export interface ReviewResult {
   feedback: string;
 }
 
+/** @deprecated Use AgentStateV2 for the new single-loop architecture. */
 export interface AgentState {
   sessionId: string;
   projectId: string;
@@ -225,6 +252,23 @@ export interface AgentState {
   executionResult: ExecutionResult | null;
   reviewResult: ReviewResult | null;
   retryCount: number;
+  memoryExtractionStatus: MemoryExtractionStatus;
+}
+
+/** Agent v2 state — simplified single-loop architecture. */
+export interface AgentStateV2 {
+  sessionId: string;
+  projectId: string;
+  orgId: string;
+  messages: unknown[];
+  mode: AgentMode;
+  sandboxId: string | null;
+  alwaysOnMemory: string;
+  surfacedMemories: string;
+  iterationCount: number;
+  finished: boolean;
+  generatedDiffs: FileDiff[];
+  plan: PlanStep[] | null;
   memoryExtractionStatus: MemoryExtractionStatus;
 }
 
@@ -265,6 +309,7 @@ export interface Database {
       decisionLog: TableDef<DecisionLog>;
       fileEvolution: TableDef<FileEvolution>;
       memoryEdits: TableDef<MemoryEdit>;
+      sessionSummaries: TableDef<SessionSummary>;
     };
     Views: Record<never, never>;
     Functions: Record<never, never>;

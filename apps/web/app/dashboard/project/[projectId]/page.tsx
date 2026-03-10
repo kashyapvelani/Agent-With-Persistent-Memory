@@ -1,9 +1,10 @@
+import { redirect } from "next/navigation";
 
-export default function Page() {
-
-    return (
-        <div>
-            Project Page   
-        </div>
-    );
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  redirect(`/dashboard/project/${projectId}/thread/new`);
 }

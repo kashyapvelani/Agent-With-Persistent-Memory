@@ -1,19 +1,18 @@
 import type { TypedSupabaseClient } from "@workspace/db";
 import type { QdrantClient } from "@qdrant/js-client-rest";
 import type OpenAI from "openai";
-import { searchDecisions } from "@workspace/qdrant";
+import { searchDecisions, searchSessionSummaries } from "@workspace/qdrant";
 
 /**
- * Builds the memory context block injected into every PlannerNode / CoderNode
- * system prompt. Pulls conventions + architecture from Supabase and searches
- * the decision log semantically via Qdrant.
+ * Builds the always-on memory block (~2-3K tokens) injected into every
+ * system prompt. Pulls conventions + architecture from Supabase.
+ *
+ * Unlike v1's buildMemoryContext, this does NOT search decisions — that
+ * is handled by the recall_memory tool in the agent loop.
  */
-export async function buildMemoryContext(
+export async function buildAlwaysOnMemory(
   supabase: TypedSupabaseClient,
-  qdrant: QdrantClient,
-  openai: OpenAI,
-  projectId: string,
-  taskDescription: string
+  projectId: string
 ): Promise<string> {
   const [conventionsRes, archRes] = await Promise.all([
     supabase
@@ -31,15 +30,7 @@ export async function buildMemoryContext(
   const conventions = conventionsRes.data?.conventions;
   const architecture = archRes.data?.architecture;
 
-  // Embed the current task to find semantically relevant past decisions
-  const embRes = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: taskDescription,
-  });
-  const vector = embRes.data[0]!.embedding;
-  const decisions = await searchDecisions(qdrant, projectId, vector, 3);
-
-  // ── Conventions block ────────────────────────────────────────────────────
+  // ── Conventions block ──────────────────────────────────────────────────
   const conventionsBlock = conventions
     ? `### Coding Conventions
 - Naming style: ${conventions.namingStyle || "not specified"}
@@ -51,7 +42,7 @@ export async function buildMemoryContext(
 - File structure: ${conventions.fileStructure || "not specified"}`
     : "";
 
-  // ── Architecture block ───────────────────────────────────────────────────
+  // ── Architecture block ─────────────────────────────────────────────────
   const architectureBlock = architecture
     ? `### Architecture Rules
 Layers: ${architecture.layers?.join(" → ") || "not specified"}
@@ -67,25 +58,84 @@ Service relationships:
 ${architecture.serviceRelationships?.map((r: string) => `- ${r}`).join("\n") || "none"}`
     : "";
 
-  // ── Decision log block ───────────────────────────────────────────────────
-  const decisionsBlock =
-    decisions.length > 0
-      ? `### Relevant Past Decisions
-${decisions
-  .map(
-    (d, i) =>
-      `${i + 1}. Goal: ${d.payload.goal}\n   Approach: ${d.payload.approach}`
-  )
-  .join("\n")}`
-      : "";
-
-  if (!conventionsBlock && !architectureBlock && !decisionsBlock) return "";
+  if (!conventionsBlock && !architectureBlock) return "";
 
   return `## Project Intelligence (follow strictly)
 
 ${conventionsBlock}
 
-${architectureBlock}
+${architectureBlock}`.trim();
+}
 
-${decisionsBlock}`.trim();
+/**
+ * Proactive memory surfacing — runs on each user message in initNode.
+ * Embeds the user's message and searches decisions + session summaries
+ * with a high threshold (>0.85) to find only highly relevant matches.
+ * Returns a formatted block or empty string if nothing found.
+ *
+ * This is NOT an LLM call — only an embedding + vector search.
+ */
+export async function surfaceRelevantMemories(
+  qdrant: QdrantClient,
+  openai: OpenAI,
+  projectId: string,
+  userMessage: string
+): Promise<string> {
+  if (!userMessage.trim()) return "";
+
+  const embRes = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: userMessage,
+  });
+  const vector = embRes.data[0]!.embedding;
+
+  // Search both decisions and session summaries with high confidence threshold
+  const [decisions, sessions] = await Promise.all([
+    searchDecisions(qdrant, projectId, vector, 3).then((results) =>
+      results.filter((r) => r.score > 0.85)
+    ),
+    searchSessionSummaries(qdrant, projectId, vector, 2, 0.85),
+  ]);
+
+  if (decisions.length === 0 && sessions.length === 0) return "";
+
+  const parts: string[] = [];
+
+  if (decisions.length > 0) {
+    parts.push(
+      decisions
+        .map(
+          (d) =>
+            `- **Decision**: ${d.payload.goal} → ${d.payload.approach} (relevance: ${d.score.toFixed(2)})`
+        )
+        .join("\n")
+    );
+  }
+
+  if (sessions.length > 0) {
+    parts.push(
+      sessions
+        .map(
+          (s) =>
+            `- **Past session**: ${s.payload.summary} (topics: ${s.payload.topics.join(", ")}, relevance: ${s.score.toFixed(2)})`
+        )
+        .join("\n")
+    );
+  }
+
+  return `## Relevant Context from Project History\n${parts.join("\n")}`;
+}
+
+/**
+ * @deprecated Use buildAlwaysOnMemory for agent v2. This is kept for backward
+ * compatibility with any v1 code that may still reference the old function.
+ */
+export async function buildMemoryContext(
+  supabase: TypedSupabaseClient,
+  _qdrant: QdrantClient,
+  _openai: OpenAI,
+  projectId: string,
+  _taskDescription: string
+): Promise<string> {
+  return buildAlwaysOnMemory(supabase, projectId);
 }

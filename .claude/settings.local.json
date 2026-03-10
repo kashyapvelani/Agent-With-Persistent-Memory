@@ -3,7 +3,29 @@
     "allow": [
       "Bash(grep -E \"\\\\.tsx?$\")",
       "Bash(node -e \"import\\(''@octokit/app''\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\)\")",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(pnpm --filter web exec tsc --noEmit)",
+      "Bash(ls \"d:/NexGenesis/Project/nexgenesis project/nexgenesis/node_modules/.pnpm/@codemirror+view\"*)",
+      "Bash(pnpm add -F web @codemirror/view @codemirror/state @codemirror/language)",
+      "Bash(pnpm tsc --noEmit -p apps/web/tsconfig.json)",
+      "Bash(npx tsc --noEmit -p apps/agent/tsconfig.json)",
+      "Bash(npx tsc --noEmit -p packages/qdrant/tsconfig.json)",
+      "Bash(npx tsc --noEmit -p packages/memory/tsconfig.json)",
+      "Bash(npx tsc --noEmit --project apps/web/tsconfig.json)",
+      "Bash(find \"./node_modules/.pnpm/@langchain+langgraph-sdk\"* -name \"*.d.ts\")",
+      "Bash(pnpm install --filter=@workspace/web)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//d/NexGenesis/Project/nexgenesis/ project/nexgenesis/packages/ui/src/components/ai-elements/**)",
+      "Bash(gh api repos/langchain-ai/langgraphjs/contents/examples/ui-react/src/examples --jq '.[].name')",
+      "Bash(gh api repos/langchain-ai/langgraphjs/contents/examples --jq '.[].name')",
+      "Bash(gh search repos \"langgraphjs\" --owner langchain-ai --json name,url --limit 5)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" api repos/langchain-ai/langgraphjs/git/trees/main --jq '.tree[] | select\\(.type==\"\"tree\"\"\\) | .path')",
+      "Bash(where gh)",
+      "Read(//c/Program Files/**)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npx tsc --noEmit -p apps/web/tsconfig.json)",
+      "WebFetch(domain:docs.langchain.com)"
     ]
   }
 }

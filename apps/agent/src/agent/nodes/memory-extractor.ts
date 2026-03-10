@@ -2,37 +2,41 @@ import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { createSupabaseServiceRoleClient } from "@workspace/db";
 import { createQdrantClient } from "@workspace/qdrant";
-import { extractMemoryFromPR } from "@workspace/memory";
+import { extractMemoryFromPR, generateSessionSummary } from "@workspace/memory";
 import type { AgentStateType } from "../state.js";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 /**
- * MemoryExtractorNode — Claude Haiku 4.5 (async, non-blocking)
+ * memoryExtractNode — Claude Haiku 4.5 (async, non-blocking)
  *
- * Fires extraction in the background and immediately returns
- * memoryExtractionStatus: "running". The actual work happens in a
- * detached promise. When complete, a "memoryUpdated" custom event
- * can be emitted via the LangGraph streaming API.
+ * Agent v2: Fires both memory extraction AND session summary generation
+ * in the background. Returns immediately with memoryExtractionStatus: "running".
  *
- * Called after the user approves the final review.
+ * - Memory extraction: conventions, decisions, file evolution (when diffs exist)
+ * - Session summary: generates a summary of the session for long-term recall
  */
 export async function memoryExtractorNode(
   state: AgentStateType
 ): Promise<Partial<AgentStateType>> {
-  // Nothing to extract if not approved or no diffs
-  if (!state.reviewResult?.approved || state.generatedDiffs.length === 0) {
+  const hasDiffs = state.generatedDiffs.length > 0;
+  const hasConversation = state.messages.length > 0;
+
+  if (!hasDiffs && !hasConversation) {
     return { memoryExtractionStatus: "done" };
   }
 
   // Fire-and-forget — do not await
-  void runExtraction(state).catch((err: unknown) => {
+  void runExtraction(state, hasDiffs).catch((err: unknown) => {
     console.error("[MemoryExtractor] extraction failed:", err);
   });
 
   return { memoryExtractionStatus: "running" };
 }
 
-async function runExtraction(state: AgentStateType): Promise<void> {
+async function runExtraction(
+  state: AgentStateType,
+  hasDiffs: boolean
+): Promise<void> {
   const supabase = createSupabaseServiceRoleClient({
     url: process.env.SUPABASE_URL!,
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -56,16 +60,41 @@ async function runExtraction(state: AgentStateType): Promise<void> {
         typeof m.content === "string" ? m.content : JSON.stringify(m.content),
     }));
 
-  await extractMemoryFromPR({
-    supabase,
-    anthropic,
-    openai,
-    qdrant,
-    projectId: state.projectId,
-    orgId: state.orgId,
-    sessionId: state.sessionId,
-    goal,
-    diffs: state.generatedDiffs,
-    conversationHistory,
-  });
+  const tasks: Promise<void>[] = [];
+
+  // Extract memory from diffs (conventions, decisions, file evolution)
+  if (hasDiffs) {
+    tasks.push(
+      extractMemoryFromPR({
+        supabase,
+        anthropic,
+        openai,
+        qdrant,
+        projectId: state.projectId,
+        orgId: state.orgId,
+        sessionId: state.sessionId,
+        goal,
+        diffs: state.generatedDiffs,
+        conversationHistory,
+      })
+    );
+  }
+
+  // Generate session summary for long-term recall (always, even for QA sessions)
+  if (conversationHistory.length >= 2) {
+    tasks.push(
+      generateSessionSummary({
+        supabase,
+        anthropic,
+        openai,
+        qdrant,
+        projectId: state.projectId,
+        orgId: state.orgId,
+        sessionId: state.sessionId,
+        conversationHistory,
+      })
+    );
+  }
+
+  await Promise.all(tasks);
 }

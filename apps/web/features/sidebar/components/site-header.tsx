@@ -1,6 +1,13 @@
 "use client"
 
-import { UserButton } from "@clerk/nextjs"
+import dynamic from "next/dynamic"
+
+// Clerk's UserButton renders differently on server vs client, causing hydration mismatch.
+// Dynamic import with ssr:false ensures it only renders on the client.
+const UserButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => ({ default: mod.UserButton })),
+  { ssr: false },
+)
 import {
   Breadcrumb,
   BreadcrumbItem,

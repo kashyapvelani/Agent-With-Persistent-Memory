@@ -36,14 +36,59 @@ export async function getOrCreateSandbox(
     timeoutMs: SANDBOX_TIMEOUT_MS,
   });
 
-  // Clone the repo into /workspace
-  const cloneUrl = `https://x-access-token:${githubToken}@github.com/${repoFullName}.git`;
-  const clone = await sandbox.commands.run(
-    `git clone --depth=1 "${cloneUrl}" ${WORKSPACE_DIR} 2>&1`
+  // Ensure the workspace directory exists and is writable.
+  // E2B's default sandbox user may not have permission to create dirs at /.
+  await sandbox.commands.run(
+    `sudo mkdir -p ${WORKSPACE_DIR} && sudo chown $(whoami):$(whoami) ${WORKSPACE_DIR}`
   );
-  if (clone.exitCode !== 0) {
+
+  // Clone the repo into /workspace
+  const token = githubToken.trim();
+  console.log(
+    `[sandbox] Cloning ${repoFullName} (token: ${token ? `${token.slice(0, 8)}...` : "NONE"})`
+  );
+  const cloneUrl =
+    token.length > 0
+      ? `https://x-access-token:${token}@github.com/${repoFullName}.git`
+      : `https://github.com/${repoFullName}.git`;
+
+  // E2B's sandbox.commands.run() throws CommandExitError on non-zero exit codes
+  // rather than returning a result with exitCode. We must catch it to provide
+  // a useful error message with the token hint.
+  try {
+    // Redirect stderr→stdout so git's error messages are captured in stdout
+    // (CommandExitError exposes stdout/stderr from the result)
+    await sandbox.commands.run(
+      `GIT_TERMINAL_PROMPT=0 git clone --depth=1 "${cloneUrl}" ${WORKSPACE_DIR} 2>&1`,
+      { timeoutMs: 2 * 60 * 1000 }
+    );
+  } catch (err) {
     await sandbox.kill();
-    throw new Error(`Failed to clone ${repoFullName}: ${clone.stderr}`);
+
+    // CommandExitError implements CommandResult with stdout, stderr, exitCode, error getters
+    const errObj = err as { stderr?: string; stdout?: string; error?: string; message?: string };
+    const gitOutput = errObj.stdout || errObj.stderr || errObj.error || "";
+    const details = gitOutput || errObj.message || String(err);
+
+    // Tailor the hint based on the actual error
+    let hint: string;
+    if (details.includes("Permission denied")) {
+      hint = "Sandbox filesystem permission error. The workspace directory could not be created.";
+    } else if (details.includes("Repository not found") || details.includes("not found")) {
+      hint = token.length === 0
+        ? "No GitHub token was provided. Public repos can clone without a token; private repos require one."
+        : "The repository was not found. Check that the GitHub App has access to this repository.";
+    } else if (details.includes("Authentication failed") || details.includes("could not read Username")) {
+      hint = "GitHub authentication failed. The token may be expired or invalid.";
+    } else {
+      hint = token.length === 0
+        ? "No GitHub token was provided."
+        : "A GitHub token was provided but the clone still failed.";
+    }
+
+    throw new Error(
+      `Failed to clone ${repoFullName}. ${hint}\ngit output: ${details}`
+    );
   }
 
   // Configure git identity so commits/diffs work cleanly

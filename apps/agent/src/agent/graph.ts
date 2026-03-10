@@ -1,89 +1,40 @@
 import { StateGraph, START, END } from "@langchain/langgraph";
 import { AgentStateAnnotation } from "./state.js";
-import { classifierNode } from "./nodes/classifier.js";
-import { qaNode } from "./nodes/qa.js";
-import { plannerNode } from "./nodes/planner.js";
-import { coderNode } from "./nodes/coder.js";
-import { executorNode } from "./nodes/executor.js";
-import { reviewerNode } from "./nodes/reviewer.js";
+import { initNode } from "./nodes/init.js";
+import { agentLoopNode } from "./nodes/agent-loop.js";
 import { memoryExtractorNode } from "./nodes/memory-extractor.js";
 import type { AgentStateType } from "./state.js";
 
-// ── Routing functions ─────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_ITERATIONS = 50;
+
+// ── Routing ──────────────────────────────────────────────────────────────────
 
 /**
- * After ClassifierNode: route to the correct subgraph based on task type.
- * - qa / review  → QANode (retrieval + answer, no code changes)
- * - simpleFix    → CoderNode (direct, no planning needed)
- * - multiStep    → PlannerNode (plan → approve → code → execute → review)
+ * After each agentLoop iteration, decide whether to continue looping
+ * or exit to memory extraction.
  */
-function routeAfterClassifier(
-  state: AgentStateType
-): "qa" | "planner" | "coder" {
-  switch (state.taskType) {
-    case "qa":
-    case "review":
-      return "qa";
-    case "multiStep":
-      return "planner";
-    case "simpleFix":
-    default:
-      return "coder";
-  }
+function shouldContinue(state: AgentStateType): "agentLoop" | "memoryExtract" {
+  if (state.finished) return "memoryExtract";
+  if (state.iterationCount >= MAX_ITERATIONS) return "memoryExtract";
+  return "agentLoop";
 }
-
-/**
- * After ReviewerNode: either retry with CoderNode or finish with MemoryExtractor.
- * Max 3 retries — after that, we proceed even if not approved.
- */
-function routeAfterReviewer(
-  state: AgentStateType
-): "coder" | "memoryExtractor" {
-  if (state.reviewResult?.approved) return "memoryExtractor";
-  if (state.retryCount >= 3) return "memoryExtractor";
-  return "coder";
-}
-
-// ── Graph definition ──────────────────────────────────────────────────────────
 
 const builder = new StateGraph(AgentStateAnnotation)
   // Nodes
-  .addNode("classifier", classifierNode)
-  .addNode("qa", qaNode)
-  .addNode("planner", plannerNode)
-  .addNode("coder", coderNode)
-  .addNode("executor", executorNode)
-  .addNode("reviewer", reviewerNode)
-  .addNode("memoryExtractor", memoryExtractorNode)
+  .addNode("init", initNode)
+  .addNode("agentLoop", agentLoopNode)
+  .addNode("memoryExtract", memoryExtractorNode)
 
-  // Entry point
-  .addEdge(START, "classifier")
-
-  // Classifier → branch
-  .addConditionalEdges("classifier", routeAfterClassifier, {
-    qa: "qa",
-    planner: "planner",
-    coder: "coder",
+  // Edges
+  .addEdge(START, "init")
+  .addEdge("init", "agentLoop")
+  .addConditionalEdges("agentLoop", shouldContinue, {
+    agentLoop: "agentLoop",
+    memoryExtract: "memoryExtract",
   })
-
-  // QA is terminal
-  .addEdge("qa", END)
-
-  // Multi-step path: planner → coder (after interrupt + approval)
-  .addEdge("planner", "coder")
-
-  // Shared execution path
-  .addEdge("coder", "executor")
-  .addEdge("executor", "reviewer")
-
-  // Reviewer → retry or finish
-  .addConditionalEdges("reviewer", routeAfterReviewer, {
-    coder: "coder",
-    memoryExtractor: "memoryExtractor",
-  })
-
-  // Memory extraction is the terminal node
-  .addEdge("memoryExtractor", END);
+  .addEdge("memoryExtract", END);
 
 /**
  * Compiled LangGraph agent.

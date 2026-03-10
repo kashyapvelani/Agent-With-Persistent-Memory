@@ -25,6 +25,25 @@ export interface SearchedDecision {
   payload: DecisionPayload;
 }
 
+function isNotFoundError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const err = error as {
+    status?: number;
+    statusCode?: number;
+    response?: { status?: number };
+    message?: string;
+  };
+
+  if (err.status === 404 || err.statusCode === 404) return true;
+  if (err.response?.status === 404) return true;
+  if (typeof err.message === "string" && err.message.includes("Not Found")) {
+    return true;
+  }
+
+  return false;
+}
+
 // ----------------------------------------
 // Upsert
 // ----------------------------------------
@@ -41,7 +60,7 @@ export async function upsertDecision(
       {
         id: decision.id,
         vector: decision.vector,
-        payload: decision.payload as Record<string, unknown>,
+        payload: decision.payload as unknown as Record<string, unknown>,
       },
     ],
   });
@@ -59,14 +78,21 @@ export async function searchDecisions(
 ): Promise<SearchedDecision[]> {
   const collection = decisionCollectionName(projectId);
 
-  const results = await client.search(collection, {
-    vector,
-    limit,
-    filter: {
-      must: [{ key: "projectId", match: { value: projectId } }],
-    },
-    with_payload: true,
-  });
+  let results;
+  try {
+    results = await client.search(collection, {
+      vector,
+      limit,
+      filter: {
+        must: [{ key: "projectId", match: { value: projectId } }],
+      },
+      with_payload: true,
+    });
+  } catch (error) {
+    // Missing collection is expected for projects with no decision memory yet.
+    if (isNotFoundError(error)) return [];
+    throw error;
+  }
 
   return results.map((r) => ({
     id: String(r.id),

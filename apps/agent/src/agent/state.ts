@@ -1,61 +1,64 @@
 import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 import type { BaseMessage } from "@langchain/core/messages";
 import type {
-  TaskType,
+  AgentMode,
   PlanStep,
-  CodeChunk,
   FileDiff,
-  ExecutionResult,
-  ReviewResult,
   MemoryExtractionStatus,
 } from "@workspace/types";
 
-// Scalar last-write-wins reducer — replaces the current value with the update
+/** Scalar last-write-wins reducer — replaces the current value with the update. */
 function replace<T>(_current: T, update: T): T {
   return update;
 }
 
+/**
+ * Agent v2 state — single agentic loop inspired by Claude Code.
+ *
+ * Compared to v1: removed taskType (no classifier), currentStepIndex,
+ * retrievedChunks, executionResult, reviewResult, retryCount, memoryContext.
+ * Added: mode, alwaysOnMemory, surfacedMemories, iterationCount, finished.
+ */
 export const AgentStateAnnotation = Annotation.Root({
-  // LangChain message history — appends new messages (v1.x uses `value`, not `reducer`)
+  // ── Core conversation ─────────────────────────────────────────────────────
   messages: Annotation<BaseMessage[]>({
     value: messagesStateReducer,
     default: () => [],
   }),
 
-  // Session / project identity (set once at graph invocation)
+  // ── Identity (set once per invocation) ────────────────────────────────────
   sessionId: Annotation<string>({ value: replace, default: () => "" }),
   projectId: Annotation<string>({ value: replace, default: () => "" }),
   orgId: Annotation<string>({ value: replace, default: () => "" }),
 
-  // Classifier output
-  taskType: Annotation<TaskType>({ value: replace, default: () => "qa" as TaskType }),
+  // ── Mode ──────────────────────────────────────────────────────────────────
+  // "plan" = read-only tools, creates plan, interrupts for approval, then switches to "auto"
+  // "auto" = full tool access, agent decides everything
+  mode: Annotation<AgentMode>({
+    value: replace,
+    default: () => "auto" as AgentMode,
+  }),
 
-  // Planner output
-  plan: Annotation<PlanStep[] | null>({ value: replace, default: () => null }),
-  currentStepIndex: Annotation<number>({ value: replace, default: () => 0 }),
-
-  // Retrieval
-  retrievedChunks: Annotation<CodeChunk[]>({ value: replace, default: () => [] }),
-
-  // Memory context block injected into Planner/Coder system prompts
-  memoryContext: Annotation<string | null>({ value: replace, default: () => null }),
-
-  // E2B sandbox ID — reused across all nodes in the same session (avoids re-cloning)
+  // ── E2B Sandbox ───────────────────────────────────────────────────────────
   sandboxId: Annotation<string | null>({ value: replace, default: () => null }),
 
-  // Coder output
+  // ── Memory ────────────────────────────────────────────────────────────────
+  // Always-on context (~2-3K tokens): conventions + architecture rules
+  alwaysOnMemory: Annotation<string>({ value: replace, default: () => "" }),
+  // Proactively surfaced memories from embedding search (set in initNode)
+  surfacedMemories: Annotation<string>({ value: replace, default: () => "" }),
+
+  // ── Loop control ──────────────────────────────────────────────────────────
+  iterationCount: Annotation<number>({ value: replace, default: () => 0 }),
+  finished: Annotation<boolean>({ value: replace, default: () => false }),
+
+  // ── Outputs ───────────────────────────────────────────────────────────────
   generatedDiffs: Annotation<FileDiff[]>({ value: replace, default: () => [] }),
 
-  // Executor output
-  executionResult: Annotation<ExecutionResult | null>({ value: replace, default: () => null }),
+  // ── Plan (optional, created by agent when it decides to plan) ─────────────
+  plan: Annotation<PlanStep[] | null>({ value: replace, default: () => null }),
 
-  // Reviewer output
-  reviewResult: Annotation<ReviewResult | null>({ value: replace, default: () => null }),
-
-  // Retry counter (Reviewer → Coder loop, max 3)
-  retryCount: Annotation<number>({ value: replace, default: () => 0 }),
-
-  // Async memory extraction status (emitted as custom stream event)
+  // ── Memory extraction ─────────────────────────────────────────────────────
   memoryExtractionStatus: Annotation<MemoryExtractionStatus>({
     value: replace,
     default: () => null,

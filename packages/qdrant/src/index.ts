@@ -40,3 +40,13 @@ export {
   type DecisionPoint,
   type SearchedDecision,
 } from "./decisions.js";
+
+export {
+  sessionCollectionName,
+  ensureSessionCollection,
+  upsertSessionSummary,
+  searchSessionSummaries,
+  type SessionPayload,
+  type SessionPoint,
+  type SearchedSession,
+} from "./sessions.js";
