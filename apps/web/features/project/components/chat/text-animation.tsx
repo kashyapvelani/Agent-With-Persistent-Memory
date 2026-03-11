@@ -4,7 +4,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import * as React from "react";
 
-const DEFAULT_WORDS = ["Syncing...", "Modulating...", "Calibrating...", "Propelling...", "Probing...", "Scouting...", "Vectoring...", "Forging...", "Architecting...", "Manifesting...", "Synthesizing...", ""] as const;
+const DEFAULT_WORDS = ["Syncing...", "Modulating...", "Calibrating...", "Propelling...", "Probing...", "Scouting...", "Vectoring...", "Forging...", "Architecting...", "Manifesting...", "Synthesizing...", "Mapping the sector", "Charting the system", "Scanning signals", "Calibrating thrusters", "Engaging boosters", "Surveying terrain", "Deploying probes", "Collecting telemetry", "Coordinating satellites", "Dispatching rover"] as const;
   
 type TextChangeAnimationProps = {
   words?: readonly string[];

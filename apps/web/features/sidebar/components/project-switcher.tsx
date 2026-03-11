@@ -65,7 +65,7 @@ export const ProjectSwitcher = () => {
 
     return (
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <Link href={`/dashboard/project/${currentProject?.id}`}>
+        <Link href={`/dashboard/project/${currentProject?.id}/thread/new`}>
         <div className="px-2">
             <span className="max-w-56 truncate text-sm font-medium">
               {currentProjectName}

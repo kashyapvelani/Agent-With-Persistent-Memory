@@ -88,12 +88,12 @@ export function ProjectCards({
 
         let percent = 0
         if (hasTotal && progress) {
-          percent = (progress.indexedfiles / progress.totalfiles) * 100
+          percent = (progress.indexedfiles / progress?.totalfiles) * 100
         }
 
         return (
           <Link
-            href={`/dashboard/project/${project.id}`}
+            href={`/dashboard/project/${project.id}/thread/new`}
             key={project.id}
             className="transition-colors hover:border-foreground/20 hover:cursor-pointer"
           >

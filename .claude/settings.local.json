@@ -25,7 +25,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:api.github.com)",
       "Bash(npx tsc --noEmit -p apps/web/tsconfig.json)",
-      "WebFetch(domain:docs.langchain.com)"
+      "WebFetch(domain:docs.langchain.com)",
+      "Bash(xargs grep -l \"useStream\\\\|streamMode\")"
     ]
   }
 }

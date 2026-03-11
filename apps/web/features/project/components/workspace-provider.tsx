@@ -206,6 +206,19 @@ export function WorkspaceProvider({
     onThreadId: setLanggraphThreadId,
     streamMode: ["values", "messages"],
     reconnectOnMount: true,
+    onError: (error) => {
+      // Silence abort errors — these are expected when stopping a stream,
+      // unmounting, or submitting a new message while streaming.
+      if (
+        error.name === "AbortError" ||
+        error.message === "Abort" ||
+        error.message === "The operation was aborted" ||
+        error.message === "signal is aborted without reason"
+      ) {
+        return;
+      }
+      console.error("Stream error:", error);
+    },
   });
 
   // -- Side-effect: when useStream creates a new thread, save the session --
@@ -283,6 +296,11 @@ export function WorkspaceProvider({
   // -- Submit ---------------------------------------------------------------
   const submit = useCallback(
     async (message: string) => {
+      // Stop any active stream before submitting a new message
+      if (stream.isLoading) {
+        stream.stop();
+      }
+
       // Store first message for title generation (used in onThreadId callback)
       if (!langgraphThreadId) {
         firstMessageRef.current = message;

@@ -1,16 +1,19 @@
-import { Header } from "@/components/header"
-import { Button } from "@workspace/ui/components/button"
+
+import { Footer } from "@/features/home/components/footer";
+import { Header } from "@/features/home/components/header";
+import { HeroSection } from "@/features/home/components/hero-section";
+import { Separator } from "@workspace/ui/components/separator";
+import { FeatureSection } from "@/features/home/components/feature-section"
 
 export default function Page() {
   return (
     <>
-      <Header />
-      <main className="flex flex-col container py-v4 justify-center gap-4">
-        <h1 className="text-2xl">NexGenesis: AI Agent with Persistent Memory</h1>
-        <div className="flex gap-2">
-          <Button>Get Started</Button>
-        </div>
-      </main>
+      <Header/>
+      <HeroSection />
+      <Separator className="my-12" />
+      {/* Features */}
+      <FeatureSection />
+      <Footer />
     </>
-  )
+  );
 }

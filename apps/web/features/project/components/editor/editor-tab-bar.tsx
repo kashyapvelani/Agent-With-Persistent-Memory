@@ -43,7 +43,7 @@ export function EditorTabBar({
             ) : (
               <FileCode className="size-3.5 shrink-0" />
             )}
-            <span className="max-w-[140px] truncate">{basename(tab.filename)}</span>
+            <span className="max-w-35 truncate">{basename(tab.filename)}</span>
             {tab.mode === "diff" && (
               <span className="text-[10px] text-muted-foreground">(diff)</span>
             )}
