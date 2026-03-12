@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+# Build from monorepo root:
+# docker build -f apps/agent/Dockerfile.worker -t nexgenesis-index-worker .
+WORKDIR /app
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/agent ./apps/agent
+COPY packages ./packages
+
+RUN pnpm install --frozen-lockfile --filter @workspace/agent...
+
+CMD ["pnpm", "--filter", "@workspace/agent", "worker:index"]

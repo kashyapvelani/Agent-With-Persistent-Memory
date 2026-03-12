@@ -3,6 +3,12 @@ import { createSupabaseServiceRoleClient } from "@workspace/db";
 import { runIndexingPipeline, createIndexingJob } from "./pipeline.js";
 
 const POLL_INTERVAL_MS = 5_000;
+let shuttingDown = false;
+let pollInFlight = false;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function getSupabase() {
   return createSupabaseServiceRoleClient({
@@ -65,14 +71,45 @@ async function pollAndIndex(): Promise<void> {
   }
 }
 
+async function tick(): Promise<void> {
+  if (pollInFlight) {
+    // Prevent overlapping poll cycles if indexing takes longer than the poll interval.
+    return;
+  }
+
+  pollInFlight = true;
+  try {
+    await pollAndIndex();
+  } catch (err) {
+    console.error("[worker] Poll cycle error:", err);
+  } finally {
+    pollInFlight = false;
+  }
+}
+
 async function main(): Promise<void> {
   console.log("[worker] NexGenesis indexing worker started. Polling every 5s...");
 
-  // Run immediately, then on interval
-  await pollAndIndex();
-  setInterval(() => {
-    pollAndIndex().catch((err) => console.error("[worker] Poll cycle error:", err));
-  }, POLL_INTERVAL_MS);
+  // Run immediately, then loop continuously.
+  await tick();
+
+  while (!shuttingDown) {
+    await sleep(POLL_INTERVAL_MS);
+    if (shuttingDown) break;
+    await tick();
+  }
+
+  console.log("[worker] Shutdown complete.");
 }
+
+process.on("SIGTERM", () => {
+  console.log("[worker] SIGTERM received. Draining...");
+  shuttingDown = true;
+});
+
+process.on("SIGINT", () => {
+  console.log("[worker] SIGINT received. Draining...");
+  shuttingDown = true;
+});
 
 main().catch(console.error);
