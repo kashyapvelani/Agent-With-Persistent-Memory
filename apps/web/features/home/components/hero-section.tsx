@@ -18,8 +18,8 @@ export function HeroSection () {
           </h1>
         </div>
       </section>
-      <div className="absolute flex flex-col bottom-4 w-full items-start gap-4">
-        <div className="text-sm text-foreground w-2/6">
+      <div className="absolute flex flex-col bottom-4 w-full items-center gap-4">
+        <div className="text-sm text-center text-foreground w-2/6">
             The Space Station for Autonomous Development. Persistent AI agents working on your codebase 24/7.
         </div>
         <Button>

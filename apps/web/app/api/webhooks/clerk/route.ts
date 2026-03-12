@@ -69,10 +69,16 @@ export async function POST(req: Request) {
         user.external_accounts.find((a) => a.username)?.username ??
         user.username ??
         null;
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("clerkid", user.id)
+        .maybeSingle();
+      const userId = existingUser?.id ?? randomUUID();
 
       await supabase.from("users").upsert(
         {
-          id: randomUUID(),
+          id: userId,
           clerkid: user.id,
           email: primaryEmail,
           githubusername: githubUsername,
@@ -85,10 +91,16 @@ export async function POST(req: Request) {
     case "organization.created":
     case "organization.updated": {
       const org = event.data as ClerkOrgPayload;
+      const { data: existingOrg } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("clerkorgid", org.id)
+        .maybeSingle();
+      const orgUuid = existingOrg?.id ?? randomUUID();
 
       await supabase.from("organizations").upsert(
         {
-          id: randomUUID(),
+          id: orgUuid,
           clerkorgid: org.id,
           name: org.name,
         },

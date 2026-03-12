@@ -22,8 +22,8 @@ export const FeatureBox = ({category,title,description,features,imageURL,variant
                     <li className="list-disc">{features[2]}</li>
                 </ul>
             </div>
-            <div className="bg-sidebar items-center justify-center max-w-1/2">
-                    <Image src={imageURL} alt="Feature" width={700} height={500} className="object-cover object-center p-2"/>
+            <div className="bg-sidebar items-center justify-center max-w-1/2 rounded">
+                    <Image src={imageURL} alt="Feature" width={700} height={500} className="object-cover object-center p-2 rounded-xl"/>
             </div>
         </div>
     );

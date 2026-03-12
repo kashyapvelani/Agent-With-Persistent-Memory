@@ -24,10 +24,17 @@ export async function POST() {
     user.username ??
     null;
 
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id")
+    .eq("clerkid", user.id)
+    .maybeSingle();
+  const dbUserId = existingUser?.id ?? randomUUID();
+
   // Sync user
   const { error: userError } = await supabase.from("users").upsert(
     {
-      id: randomUUID(),
+      id: dbUserId,
       clerkid: user.id,
       email: primaryEmail,
       githubusername: githubUsername,
@@ -44,10 +51,16 @@ export async function POST() {
   if (orgId) {
     const client = await clerkClient();
     const org = await client.organizations.getOrganization({ organizationId: orgId });
+    const { data: existingOrg } = await supabase
+      .from("organizations")
+      .select("id")
+      .eq("clerkorgid", orgId)
+      .maybeSingle();
+    const orgUuid = existingOrg?.id ?? randomUUID();
 
     const { error: orgError } = await supabase.from("organizations").upsert(
       {
-        id: randomUUID(),
+        id: orgUuid,
         clerkorgid: orgId,
         name: org.name,
       },
