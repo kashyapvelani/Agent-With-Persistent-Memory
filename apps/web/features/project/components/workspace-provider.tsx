@@ -206,20 +206,21 @@ export function WorkspaceProvider({
     onThreadId: setLanggraphThreadId,
     streamMode: ["values", "messages"],
     reconnectOnMount: true,
-    onError: (error) => {
+    onError: (error: unknown) => {
       // Silence abort errors — these are expected when stopping a stream,
       // unmounting, or submitting a new message while streaming.
+      const err = error as { name?: string; message?: string };
       if (
-        error.name === "AbortError" ||
-        error.message === "Abort" ||
-        error.message === "The operation was aborted" ||
-        error.message === "signal is aborted without reason"
+        err.name === "AbortError" ||
+        err.message === "Abort" ||
+        err.message === "The operation was aborted" ||
+        err.message === "signal is aborted without reason"
       ) {
         return;
       }
       console.error("Stream error:", error);
     },
-  });
+  } as never);
 
   // -- Side-effect: when useStream creates a new thread, save the session --
   // Runs once when langgraphThreadId transitions from null → a real ID (new thread).

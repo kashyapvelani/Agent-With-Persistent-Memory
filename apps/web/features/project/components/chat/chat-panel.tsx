@@ -33,7 +33,7 @@ export function ChatPanel() {
             <ConversationEmptyState
               icon={<Image src="/logo.svg" alt="Logo" width={150} height={50} className="opacity-40" />}
               title="Start a conversation"
-              description="Ask me about your codebase or request changes"
+              description="Ask me about your codebase or request changes. Please wait for a minute as agent has cold start problems."
             />
           ) : (
             <ChatMessageList />

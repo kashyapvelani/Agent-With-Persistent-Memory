@@ -30,7 +30,7 @@ export async function GET(
 
   // Get latest indexing job for this project
   const { data: job } = await supabase
-    .from("indexingjobs")
+    .from("indexingJobs")
     .select("*")
     .eq("projectid", projectId)
     .order("createdat", { ascending: false })

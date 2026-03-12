@@ -47,7 +47,8 @@ export async function upsertCodeChunks(
     points: chunks.map((c) => ({
       id: c.id,
       vector: c.vector,
-      payload: c.payload as Record<string, unknown>,
+      // Qdrant payload accepts generic JSON-like objects; bridge our typed payload explicitly.
+      payload: c.payload as unknown as Record<string, unknown>,
     })),
   });
 }

@@ -97,7 +97,11 @@ export async function POST(req: Request) {
       .eq("clerkorgid", orgId)
       .single();
     internalOrgId = org?.id ?? null;
-    githubInstallationId = org?.githubinstallationid ?? null;
+    const parsedInstallationId = Number(org?.githubinstallationid);
+    githubInstallationId =
+      Number.isFinite(parsedInstallationId) && parsedInstallationId > 0
+        ? parsedInstallationId
+        : null;
   }
 
   const projectId = randomUUID();

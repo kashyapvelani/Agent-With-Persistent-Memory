@@ -33,8 +33,8 @@ export async function GET() {
 
   console.log("[github/repos] org lookup:", { org, orgError: orgError?.message });
 
-  const installationId = org?.githubinstallationid;
-  if (!installationId) {
+  const installationId = Number(org?.githubinstallationid);
+  if (!Number.isFinite(installationId) || installationId <= 0) {
     console.log("[github/repos] No installationId — returning not connected");
     return Response.json({ connected: false, repos: [] });
   }
@@ -62,3 +62,4 @@ export async function GET() {
     return Response.json({ connected: false, repos: [] });
   }
 }
+

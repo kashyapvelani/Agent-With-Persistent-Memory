@@ -102,14 +102,19 @@ export async function getRepoTree(
     recursive: "1",
   });
 
+  type GitTreeItem = NonNullable<typeof tree.tree>[number];
+
+  const isTreeEntry = (
+    e: GitTreeItem
+  ): e is GitTreeItem & { path: string; sha: string; type: "blob" | "tree" } =>
+    !!e.path && !!e.sha && (e.type === "blob" || e.type === "tree");
+
   return (tree.tree ?? [])
-    .filter((e): e is TreeEntry & { path: string; type: "blob" | "tree" } =>
-      e.path !== undefined && (e.type === "blob" || e.type === "tree")
-    )
+    .filter(isTreeEntry)
     .map((e) => ({
       path: e.path,
       type: e.type,
-      sha: e.sha ?? "",
+      sha: e.sha,
       size: e.size,
     }));
 }

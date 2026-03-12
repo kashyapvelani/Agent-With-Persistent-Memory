@@ -84,11 +84,12 @@ export function ProjectCards({
         const progress = progressMap.get(project.id)
         const isIndexing =
           project.indexStatus === "pending" || project.indexStatus === "indexing"
-        const hasTotal = typeof progress?.totalfiles === "number" && progress.totalfiles > 0
+        const totalFiles = typeof progress?.totalfiles === "number" ? progress.totalfiles : 0
+        const hasTotal = totalFiles > 0
 
         let percent = 0
         if (hasTotal && progress) {
-          percent = (progress.indexedfiles / progress?.totalfiles) * 100
+          percent = (progress.indexedfiles / totalFiles) * 100
         }
 
         return (
