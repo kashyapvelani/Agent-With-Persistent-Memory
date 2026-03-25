@@ -1,3 +1,3 @@
-# NexGenesis AI
+# Agentic Development Environment
 
-NexGenesis AI Agentic Development Environment with Persistent Memory for Large Codebases.
+AI Agentic Development Environment with Persistent Memory for Large Codebases.
