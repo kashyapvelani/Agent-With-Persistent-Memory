@@ -1,7 +1,7 @@
 FROM node:20-alpine
 
 # Build from monorepo root:
-# docker build -f apps/agent/Dockerfile.worker -t nexgenesis-index-worker .
+# docker build -f apps/agent/Dockerfile.worker -t ADE-index-worker .
 WORKDIR /app
 
 RUN corepack enable

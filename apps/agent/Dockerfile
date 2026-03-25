@@ -4,7 +4,7 @@ FROM langchain/langgraphjs-api:20
 # docker build -f apps/agent/Dockerfile .
 ADD . /deps/agent
 
-ENV LANGSERVE_GRAPHS='{"nexgenesis-agent":"./apps/agent/src/agent/graph.ts:graph"}'
+ENV LANGSERVE_GRAPHS='{"ade-agent":"./apps/agent/src/agent/graph.ts:graph"}'
 WORKDIR /deps/agent
 
 RUN corepack enable && pnpm install --frozen-lockfile --filter @workspace/agent...

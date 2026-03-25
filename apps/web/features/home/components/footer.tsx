@@ -54,7 +54,7 @@ export const Footer = () => {
       <div className='container flex px-4 py-8 sm:px-6'>
         <p className='text-sm text-muted-foreground'>
           {`©${new Date().getFullYear()}`}{' '}
-          NexGenesis. All rights reserved.
+          ADE. All rights reserved.
         </p>
       </div>
     </footer>

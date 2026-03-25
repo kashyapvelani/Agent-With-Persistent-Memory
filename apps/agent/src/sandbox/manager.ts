@@ -93,8 +93,8 @@ export async function getOrCreateSandbox(
 
   // Configure git identity so commits/diffs work cleanly
   await sandbox.commands.run(
-    `git -C ${WORKSPACE_DIR} config user.email "agent@nexgenesis.ai" && ` +
-    `git -C ${WORKSPACE_DIR} config user.name "NexGenesis Agent"`
+    `git -C ${WORKSPACE_DIR} config user.email "agent@ADE.ai" && ` +
+    `git -C ${WORKSPACE_DIR} config user.name "ADE Agent"`
   );
 
   return { sandbox, sandboxId: sandbox.sandboxId };

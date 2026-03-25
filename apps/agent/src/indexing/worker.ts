@@ -88,7 +88,7 @@ async function tick(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("[worker] NexGenesis indexing worker started. Polling every 5s...");
+  console.log("[worker] ADE indexing worker started. Polling every 5s...");
 
   // Run immediately, then loop continuously.
   await tick();

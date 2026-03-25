@@ -3,16 +3,16 @@ import { Separator } from "@workspace/ui/components/separator"
 
 const features = [{
     category: "MISSION MEMORY",
-    title: "Orbit remembers your entire codebase.",
-    description: "Traditional AI coding tools forget context between sessions. Orbit maintains persistent project memory, so your AI agent understands the system like a long-term collaborator. Orbit continuously builds a structured knowledge graph of your repository:",
+    title: "ADE remembers your entire codebase.",
+    description: "Traditional AI coding tools forget context between sessions. ADE maintains persistent project memory, so your AI agent understands the system like a long-term collaborator. ADE continuously builds a structured knowledge graph of your repository:",
     features: ["Architecture overview", "File relationships", "Module responsibilities"],
     imageURL: "/Agent Dashboard.png",
     variant: "normal"
 },{
     category: "PLANETARY MAPPING",
     title: "Full-Codebase Navigation.",
-    description: `Orbit maps your entire repository before it starts working.
-Instead of loading only a few files into context, Orbit builds a structured map of the entire codebase.
+    description: `ADE maps your entire repository before it starts working.
+Instead of loading only a few files into context, ADE builds a structured map of the entire codebase.
 This allows the agent to understand:`,
     features: ["Relationships between files", "Dependency graphs", "Architecture boundaries"],
     imageURL: "/Agent Workspace.png",

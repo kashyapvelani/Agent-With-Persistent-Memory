@@ -1,4 +1,4 @@
-NexGenesis AI: AI agent with persistent memory for large codebase
+ADE AI: AI agent with persistent memory for large codebase
 
 ## Next.js version
 This project uses **Next.js 16**. In Next.js 16, `middleware.ts` has been replaced by `proxy.ts`. Auth middleware and route protection is done in `apps/web/proxy.ts`, not `middleware.ts`. Never suggest or create a `middleware.ts` file.
@@ -6,7 +6,7 @@ This project uses **Next.js 16**. In Next.js 16, `middleware.ts` has been replac
 ---
 
 ## Project Overview
-NexGenesis is a cloud AI coding agent that builds long-term project intelligence. It connects to a GitHub repo, indexes the codebase, and accumulates memory (conventions, architecture, decisions) across every PR — becoming smarter about each project over time.
+ADE is a cloud AI coding agent that builds long-term project intelligence. It connects to a GitHub repo, indexes the codebase, and accumulates memory (conventions, architecture, decisions) across every PR — becoming smarter about each project over time.
 
 **Core loop:** User sends message → ClassifierNode routes it → PlannerNode plans (multiStep) → CoderNode edits files in E2B sandbox (ReAct loop) → ExecutorNode runs tests → ReviewerNode reviews → MemoryExtractorNode learns.
 

@@ -17,7 +17,7 @@ const WORKSPACE_DIR = "/workspace";
 /**
  * POST /api/sandbox/commit
  *
- * Commits all changes from the E2B sandbox, pushes to a new `orbit/{uuid}`
+ * Commits all changes from the E2B sandbox, pushes to a new `ADE/{uuid}`
  * branch, and opens a PR against the project's default branch.
  *
  * Body: { sandboxId: string, projectId: string, commitMessage?: string }
@@ -110,8 +110,8 @@ export async function POST(req: Request) {
 
   // 5. Create branch, stage, commit, push
   const branchId = randomUUID().slice(0, 8);
-  const branch = `orbit/${branchId}`;
-  const message = commitMessage || "NexGenesis: apply agent changes";
+  const branch = `ADE/${branchId}`;
+  const message = commitMessage || "ADE: apply agent changes";
 
   try {
     // Create and switch to the new branch
@@ -164,7 +164,7 @@ export async function POST(req: Request) {
       body: [
         "## Changes",
         "",
-        "Applied by [NexGenesis](https://nexgenesis.ai) AI agent.",
+        "Applied by [ADE](https://ADE.ai) AI agent.",
         "",
         `Branch: \`${branch}\``,
       ].join("\n"),

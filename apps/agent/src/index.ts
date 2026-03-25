@@ -4,7 +4,7 @@ import "dotenv/config";
 export { graph } from "./agent/graph.js";
 
 export async function startAgent(): Promise<void> {
-  console.log("NexGenesis agent ready.");
+  console.log("ADE agent ready.");
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

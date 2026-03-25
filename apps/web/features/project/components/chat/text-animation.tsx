@@ -24,7 +24,7 @@ function getRandomWordIndex(length: number, currentIndex: number) {
   return nextIndex;
 }
 
-function OrbitIndicator() {
+function ADEIndicator() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
@@ -76,7 +76,7 @@ export function TextChangeAnimation({
       ref={ref}
       className="relative flex min-h-5 items-center overflow-hidden text-sm text-muted-foreground"
     >
-      <OrbitIndicator />
+      <ADEIndicator />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={`${activeWord}-${index}`}

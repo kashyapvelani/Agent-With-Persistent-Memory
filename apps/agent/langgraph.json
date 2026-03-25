@@ -1,7 +1,7 @@
 {
   "node_version": "20",
   "graphs": {
-    "nexgenesis-agent": "./src/agent/graph.ts:graph"
+    "ade-agent": "./src/agent/graph.ts:graph"
   },
   "env": ".env"
 }

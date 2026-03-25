@@ -9,12 +9,12 @@ export function HeroSection () {
             <ThreeBodyMotion className="absolute inset-0 pointer-events-none" />
       <section className="relative z-10 flex min-h-screen items-center justify-center px-6 text-center">
         <div className="max-w-(--g2) space-y-4">
-          <Badge variant="secondary">INTRODUCING ORBIT</Badge>
+          <Badge variant="secondary">INTRODUCING ADE</Badge>
           <h1 className="text-6xl tracking-tight">
             Every Codebase is a Planet.
           </h1>
           <h1 className="text-6xl text-muted-foreground">
-            Orbit lets agents explore it.
+            ADE lets agents explore it.
           </h1>
         </div>
       </section>
@@ -24,7 +24,7 @@ export function HeroSection () {
         </div>
         <Button>
             <Rocket className="size-3.5"/>
-            Launch Orbit
+            Launch ADE
         </Button>
       </div>
     </div>

@@ -60,7 +60,7 @@ export async function createRepo(
   const { data } = await octokit.rest.repos.createForAuthenticatedUser({
     name,
     private: options.private ?? false,
-    description: options.description ?? "Created by NexGenesis",
+    description: options.description ?? "Created by ADE",
     auto_init: true, // creates initial commit so the repo isn't empty
   });
 

@@ -11,8 +11,8 @@ pnpm --filter @workspace/agent worker:index
 Or use Docker:
 
 ```bash
-docker build -f apps/agent/Dockerfile.worker -t nexgenesis-index-worker .
-docker run --env-file apps/agent/.env nexgenesis-index-worker
+docker build -f apps/agent/Dockerfile.worker -t ADE-index-worker .
+docker run --env-file apps/agent/.env ADE-index-worker
 ```
 
 ## Required env vars
