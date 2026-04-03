@@ -14,6 +14,7 @@ class SentryExampleFrontendError extends Error {
 export default function Page() {
   const [hasSentError, setHasSentError] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
+  const [clicked, setIsClicked] = useState(false);
 
   useEffect(() => {
     Sentry.logger.info("Sentry example page loaded");
@@ -84,15 +85,16 @@ export default function Page() {
                 }
               },
             );
-            throw new SentryExampleFrontendError(
-              "This error is raised on the frontend of the example page.",
-            );
+            setIsClicked(true);
+            return;
           }}
           disabled={!isConnected}
         >
           <span>Throw Sample Error</span>
         </button>
-
+        {clicked && (
+          <p className="success">Button Clicked - No Sentry Error.</p>
+        )}
         {hasSentError ? (
           <p className="success">Error sent to Sentry.</p>
         ) : !isConnected ? (
