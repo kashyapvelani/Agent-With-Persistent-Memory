@@ -201,7 +201,7 @@ export function WorkspaceProvider({
   const apiUrl = process.env.NEXT_PUBLIC_LANGGRAPH_API_URL ?? "";
   const stream = useStream<AgentStateV2>({
     apiUrl,
-    assistantId: "ADE-agent",
+    assistantId: "ade-agent",
     threadId: langgraphThreadId ?? undefined,
     onThreadId: setLanggraphThreadId,
     streamMode: ["values", "messages"],
