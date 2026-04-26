@@ -31,9 +31,9 @@ export function ChatPanel() {
         <ConversationContent className="px-4 py-6">
           {messages.length === 0 ? (
             <ConversationEmptyState
-              icon={<Image src="/logo.svg" alt="Logo" width={150} height={50} className="opacity-40" />}
+              icon={<Image src="/logo.svg" alt="Logo" width={25} height={25} className="opacity-40" />}
               title="Start a conversation"
-              description="Ask me about your codebase or request changes. Please wait for a minute as agent has cold start problems."
+              description="Ask me about your codebase or request changes."
             />
           ) : (
             <ChatMessageList />

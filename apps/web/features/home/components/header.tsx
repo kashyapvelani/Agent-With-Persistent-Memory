@@ -13,7 +13,7 @@ export const Header = () => {
             {/* Logo */}
             <div className="flex flex-row items-center justify-center gap-2">
             <Image src="/logo.svg" alt="Logo" width={25} height={25} />
-            <span className="font-semibold text-md">Orbit</span>
+            <span className="text-md">Orbit</span>
             </div>
             {/* Navigation */}
             <div>

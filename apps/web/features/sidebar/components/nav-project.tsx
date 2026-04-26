@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Folder, Forward, MessageSquare, MoreHorizontal, SquarePen, Trash2 } from "lucide-react"
 import type { Session } from "@workspace/types"
 
@@ -27,6 +28,16 @@ import {
 } from "@workspace/ui/components/sidebar"
 import { useWorkspace } from "@/features/project/hooks/use-workspace"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
 
 export function NavProject() {
   const {
@@ -34,8 +45,33 @@ export function NavProject() {
     activeSessionId,
     sessionsVersion,
   } = useWorkspace()
+  const router = useRouter()
 
   const [sessions, setSessions] = useState<Session[]>([])
+  const [pendingDelete, setPendingDelete] = useState<Session | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return
+    const target = pendingDelete
+    setIsDeleting(true)
+    try {
+      const res = await fetch(
+        `/api/sessions/${encodeURIComponent(target.id)}`,
+        { method: "DELETE" },
+      )
+      if (!res.ok) throw new Error("Failed to delete session")
+      setSessions((prev) => prev.filter((s) => s.id !== target.id))
+      setPendingDelete(null)
+      if (activeSessionId === target.id) {
+        router.push(`/dashboard/project/${projectId}/thread/new`)
+      }
+    } catch (err) {
+      console.error("Delete session failed:", err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   useEffect(() => {
     if (!projectId) return
@@ -76,6 +112,38 @@ export function NavProject() {
         </SidebarMenu>
       </SidebarGroup>
 
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setPendingDelete(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete?.title
+                ? `"${pendingDelete.title}" will be permanently removed.`
+                : "This chat will be permanently removed."}
+              {" "}This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault()
+                confirmDelete()
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {sessions.length > 0 && (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>HISTORY</SidebarGroupLabel>
@@ -108,16 +176,19 @@ export function NavProject() {
               >
                 <DropdownMenuItem>
                   <Folder className="text-muted-foreground" />
-                  <span>View Project</span>
+                  <span>View Chat</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Forward className="text-muted-foreground" />
-                  <span>Share Project</span>
+                  <span>Share Chat</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => setPendingDelete(session)}
+                >
+                  <Trash2 />
+                  <span>Delete chat</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

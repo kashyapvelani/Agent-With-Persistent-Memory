@@ -11,7 +11,8 @@ export const Footer = () => {
       <div className='container flex flex-col max-w-7xl justify-between gap-3 px-4 py-4 max-md:flex-col sm:px-6 sm:py-6 md:gap-6 md:py-8'>
         <Link href="/">
           <div className='flex items-center gap-3'>
-            <Image src="/logo.svg" alt="Logo" height="100" width="150" className='gap-3' />
+            <Image src="/logo.svg" alt="Logo" height="25" width="25" className='gap-3' />
+            <span className='text-md'>Orbit</span>
           </div>
         </Link>
         <div className="flex items-center justify-between">
