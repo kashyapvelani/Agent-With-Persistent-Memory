@@ -8,7 +8,8 @@
     "cors": {
       "allow_origins": [
         "http://localhost:3000",
-        "https://nexgenesis-ade-web.vercel.app"
+        "https://nexgenesis-ade-web.vercel.app",
+        "https://smith.langchain.com"
       ],
       "allow_credentials": true
     }
