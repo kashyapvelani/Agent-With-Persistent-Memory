@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServiceRoleClient } from "@workspace/db";
-import { Client } from "@langchain/langgraph-sdk";
 import { randomUUID } from "crypto";
 import type { Session } from "@workspace/types";
 
@@ -8,13 +7,6 @@ const supabase = createSupabaseServiceRoleClient({
   url: process.env.SUPABASE_URL!,
   serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
 });
-
-const langGraphApiUrl =
-  process.env.LANGGRAPH_API_URL ?? process.env.NEXT_PUBLIC_LANGGRAPH_API_URL;
-
-const langGraphClient = langGraphApiUrl
-  ? new Client({ apiUrl: langGraphApiUrl })
-  : null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSession(row: any): Session {
@@ -93,18 +85,9 @@ export async function POST(req: Request) {
     return new Response("User not found", { status: 404 });
   }
 
-  // Use the provided thread ID (from useStream's onThreadId) or create one
-  let langgraphThreadId: string | null = providedThreadId ?? null;
-  if (!langgraphThreadId && langGraphClient) {
-    try {
-      const thread = await langGraphClient.threads.create();
-      langgraphThreadId = thread.thread_id;
-    } catch (err) {
-      console.warn(
-        "LangGraph thread creation failed (server may be offline):",
-        err,
-      );
-    }
+  const langgraphThreadId = providedThreadId ?? null;
+  if (!langgraphThreadId) {
+    return new Response("Missing langgraphThreadId", { status: 400 });
   }
 
   const sessionId = randomUUID();

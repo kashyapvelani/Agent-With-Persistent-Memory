@@ -1,7 +1,16 @@
 {
   "node_version": "20",
   "graphs": {
-    "ade-agent": "./src/agent/graph.ts:graph"
+    "nexgenesis-agent": "./src/agent/graph.ts:graph"
   },
-  "env": ".env"
+  "env": ".env",
+  "http": {
+    "cors": {
+      "allow_origins": [
+        "http://localhost:3000",
+        "https://nexgenesis-ade-web.vercel.app"
+      ],
+      "allow_credentials": true
+    }
+  }
 }

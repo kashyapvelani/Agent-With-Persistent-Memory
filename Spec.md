@@ -1114,14 +1114,14 @@ The LangGraph agent is containerized for production deployment:
 ```dockerfile
 FROM langchain/langgraphjs-api:20
 ADD . /deps/agent
-ENV LANGSERVE_GRAPHS='{"ade-agent":"./apps/agent/src/agent/graph.ts:graph"}'
+ENV LANGSERVE_GRAPHS='{"nexgenesis-agent":"./apps/agent/src/agent/graph.ts:graph"}'
 WORKDIR /deps/agent
 RUN corepack enable && pnpm install --frozen-lockfile --filter @workspace/agent...
 ```
 
 - Base image: LangGraph API v20 (includes LangGraph Cloud runtime)
 - Builds from monorepo root with pnpm workspace filtering
-- Exports the compiled graph as `ade-agent` for LangGraph Cloud discovery
+- Exports the compiled graph as `nexgenesis-agent` for LangGraph Cloud discovery
 
 ### D.2 Error Monitoring (Sentry)
 

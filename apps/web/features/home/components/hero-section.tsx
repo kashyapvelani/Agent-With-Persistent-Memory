@@ -7,6 +7,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Rocket } from "lucide-react";
 import { useEffect, useState } from "react";
 import ThreeBodyMotion from "./three-body-motion";
+import Link from "next/link";
 
 class HeroRedirectError extends Error {
   constructor(targetPath: string) {
@@ -20,23 +21,23 @@ export function HeroSection () {
     const [hasSentError, setHasSentError] = useState(false);
     const [isConnected, setIsConnected] = useState(true);
 
-    const handleLaunchAde = async () => {
-        Sentry.logger.info("User clicked the button, throwing a sample error");
+    const handleLaunchOrbit = async () => {
         const targetPath = "/dashboard";
-        await Sentry.startSpan(
-          {
-            name: "HeroSection Launch ADE Click",
-            op: "user-interaction",
-          },
-          async () => {
-            if (!isSignedIn) {
-              Sentry.logger.warn("User is not signed in, throwing error to prevent redirect");
-              throw new HeroRedirectError(targetPath);
-            }
-            window.location.href = targetPath;
+        try {
+          if (!isSignedIn) {
+            throw new HeroRedirectError("/sign-in");
+          }
+          window.location.href = targetPath;
+        } catch (error) {
+          if (error instanceof HeroRedirectError) {
+            Sentry.captureException(error);
             setHasSentError(true);
-          },
-        );
+            window.location.href = error.message.match(/"(.*?)"/)?.[1] || "/sign-in";
+          } else {
+            Sentry.captureException(error);
+            setHasSentError(true);
+          }
+        }
     };
 
     useEffect(() => {
@@ -58,7 +59,7 @@ export function HeroSection () {
             Every Codebase is a Planet.
           </h1>
           <h1 className="text-6xl text-muted-foreground">
-            ADE lets agents explore it.
+            Orbit lets agents explore it.
           </h1>
         </div>
       </section>
@@ -66,23 +67,12 @@ export function HeroSection () {
         <div className="text-sm text-center text-foreground w-2/6">
             The Space Station for Autonomous Development. Persistent AI agents working on your codebase 24/7.
         </div>
-        <Button onClick={handleLaunchAde} className="hover:scale-105">
+        <Link href="/dashboard">
+        <Button>
             <Rocket className="size-3.5"/>
-            Launch ADE
+            Launch Orbit
         </Button>
-        {hasSentError ? (
-          <p className="success">Error sent to Sentry.</p>
-        ) : !isConnected ? (
-          <div className="connectivity-error">
-            <p>
-              It looks like network requests to Sentry are being blocked, which
-              will prevent errors from being captured. Try disabling your
-              ad-blocker to complete the test.
-            </p>
-          </div>
-        ) : (
-          <div className="success_placeholder" />
-        )}
+        </Link>
          <div className="flex-spacer" />
       </div>
     </div>

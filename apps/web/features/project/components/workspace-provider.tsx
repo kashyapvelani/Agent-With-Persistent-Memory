@@ -198,10 +198,15 @@ export function WorkspaceProvider({
   // When threadId is null/undefined (new thread), useStream auto-creates one
   // on first submit and calls onThreadId with the new ID.
   // IMPORTANT: onThreadId must be a stable, sync callback (per docs pattern).
-  const apiUrl = process.env.NEXT_PUBLIC_LANGGRAPH_API_URL ?? "";
+  const [apiUrl] = useState<string>(() => {
+    const defaultUrl = "http://localhost:2024";
+    if (typeof window === "undefined") return defaultUrl;
+    const override = window.localStorage.getItem("nexgenesis:agentUrl");
+    return override || defaultUrl;
+  });
   const stream = useStream<AgentStateV2>({
     apiUrl,
-    assistantId: "ade-agent",
+    assistantId: "nexgenesis-agent",
     threadId: langgraphThreadId ?? undefined,
     onThreadId: setLanggraphThreadId,
     streamMode: ["values", "messages"],

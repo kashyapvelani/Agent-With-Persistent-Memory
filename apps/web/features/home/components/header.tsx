@@ -11,7 +11,10 @@ export const Header = () => {
         <header className="w-full flex items-center justify-between p-4 px-g2 bg-background z-50 absolute">
             <div className="container flex items-center justify-between">
             {/* Logo */}
-            <Image src="/logo.svg" alt="Logo" width={136} height={50} />
+            <div className="flex flex-row items-center justify-center gap-2">
+            <Image src="/logo.svg" alt="Logo" width={25} height={25} />
+            <span className="font-semibold text-md">Orbit</span>
+            </div>
             {/* Navigation */}
             <div>
                 <Link href="/">
