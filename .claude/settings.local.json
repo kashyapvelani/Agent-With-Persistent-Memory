@@ -27,7 +27,10 @@
       "Bash(npx tsc --noEmit -p apps/web/tsconfig.json)",
       "WebFetch(domain:docs.langchain.com)",
       "Bash(xargs grep -l \"useStream\\\\|streamMode\")",
-      "Read(//c/Users/kashy/.claude/projects/d--NexGenesis-Project-nexgenesis-project-nexgenesis/c1d0f423-2220-45aa-9eb7-557f11c537de/subagents/**)"
+      "Read(//c/Users/kashy/.claude/projects/d--NexGenesis-Project-nexgenesis-project-nexgenesis/c1d0f423-2220-45aa-9eb7-557f11c537de/subagents/**)",
+      "Bash(node -e ' *)",
+      "Bash(node diag.mjs)",
+      "Bash(node update-key.mjs)"
     ]
   }
 }
