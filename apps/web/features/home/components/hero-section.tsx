@@ -54,7 +54,7 @@ export function HeroSection () {
             <ThreeBodyMotion className="absolute inset-0 pointer-events-none" />
       <section className="relative z-10 flex min-h-screen items-center justify-center px-6 text-center">
         <div className="max-w-(--g2) space-y-4">
-          <Badge variant="secondary">INTRODUCING ADE</Badge>
+          <Badge variant="secondary">INTRODUCING ORBIT</Badge>
           <h1 className="text-6xl tracking-tight">
             Every Codebase is a Planet.
           </h1>
